@@ -739,7 +739,7 @@ jobs:
       resource_class: magma/teravm
       steps:
         - run: echo "Hi I'm on Runners!"
-        - run: echo "test from CIrcleci" > /var/log/circleci
+        - run: echo "test from Circleci" > /var/log/circleci
 
 
   cwf-operator-build:
