@@ -15,7 +15,7 @@ buildenv: setupenv protos swagger $(BUILD_LIST) py_patches
 $(BUILD_LIST): %_build:
 	make -C $* install_egg
 
-test_all: buildenv $(BIN)/nosetests $(BIN)/coverage $(TEST_LIST)
+test_all: buildenv $(BIN)/nosetests $(TEST_LIST)
 $(TEST_LIST): %_test:
 	make -C $* .test
 

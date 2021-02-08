@@ -50,8 +50,12 @@ class GarbageCollector:
 
     async def _collect_states_to_delete(self):
         states_to_delete = []
+        logging.info(" HELLO!!!!!! ")
         for redis_dict in self._redis_dicts:
+            logging.info(redis_dict)
+            logging.info(len(redis_dict))
             for key in redis_dict.garbage_keys():
+                logging.info("key: %s", key)
                 state_scope = redis_dict.state_scope
                 device_id = make_scoped_device_id(key, state_scope)
                 sid = StateID(deviceID=device_id, type=redis_dict.redis_type)

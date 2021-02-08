@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import redis
-
+import logging
 from magma.configuration.service_configs import get_service_config_value
 
 
@@ -21,4 +21,6 @@ def get_default_client():
     """
     redis_port = get_service_config_value('redis', 'port', 6379)
     redis_addr = get_service_config_value('redis', 'bind', 'localhost')
-    return redis.Redis(host=redis_addr, port=redis_port)
+    ret =  redis.Redis(host=redis_addr, port=redis_port)
+    logging.info(ret)
+    return ret

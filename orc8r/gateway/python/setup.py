@@ -68,6 +68,7 @@ setup(
         'redis>=2.10.5',  # redis-py (Python bindings to redis)
         'redis-collections>=0.4.2',
         'python-redis-lock>=3.7.0',
+        'fakeredis[lua]',
         'aiohttp>=0.17.2',
         'grpcio>=1.16.1',
         'protobuf>=3.14.0',

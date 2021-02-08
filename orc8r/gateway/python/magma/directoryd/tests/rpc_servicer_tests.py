@@ -13,12 +13,13 @@ limitations under the License.
 from concurrent import futures
 import grpc
 from unittest import TestCase, mock
-from magma.common.redis.mocks.mock_redis import MockRedis, MockUnavailableRedis
+from magma.common.redis.mocks.mock_redis import MockUnavailableRedis
 from magma.directoryd.rpc_servicer import GatewayDirectoryServiceRpcServicer
 from orc8r.protos.common_pb2 import Void
 from orc8r.protos.directoryd_pb2 import UpdateRecordRequest, \
     DeleteRecordRequest, GetDirectoryFieldRequest
 from orc8r.protos.directoryd_pb2_grpc import GatewayDirectoryServiceStub
+import fakeredis
 
 # Allow access to protected variables for unit testing
 # pylint: disable=protected-access
@@ -29,7 +30,7 @@ def get_mock_snowflake():
 
 
 class DirectorydRpcServiceTests(TestCase):
-    @mock.patch("redis.Redis", MockRedis)
+    @mock.patch("redis.Redis", fakeredis.FakeStrictRedis)
     def setUp(self):
         # Bind the rpc server to a free port
         thread_pool = futures.ThreadPoolExecutor(max_workers=10)
@@ -45,11 +46,11 @@ class DirectorydRpcServiceTests(TestCase):
         channel = grpc.insecure_channel('0.0.0.0:{}'.format(port))
         self._stub = GatewayDirectoryServiceStub(channel)
 
-    @mock.patch("redis.Redis", MockRedis)
+    @mock.patch("redis.Redis", fakeredis.FakeStrictRedis)
     def tearDown(self):
         self._rpc_server.stop(None)
 
-    @mock.patch("redis.Redis", MockRedis)
+    @mock.patch("redis.Redis", fakeredis.FakeStrictRedis)
     @mock.patch('snowflake.snowflake', get_mock_snowflake)
     def test_update_record(self):
         self._servicer._redis_dict.clear()
@@ -72,7 +73,7 @@ class DirectorydRpcServiceTests(TestCase):
         self.assertEqual(actual_record2.identifiers['ipv4_addr'],
                          "192.168.172.12")
 
-    @mock.patch("redis.Redis", MockRedis)
+    @mock.patch("redis.Redis", fakeredis.FakeStrictRedis)
     @mock.patch('snowflake.snowflake', get_mock_snowflake)
     def test_update_record_bad_location(self):
         self._servicer._redis_dict.clear()
@@ -86,7 +87,7 @@ class DirectorydRpcServiceTests(TestCase):
         self.assertEqual(actual_record.location_history, ['aaa-bbb'])
         self.assertEqual(actual_record.identifiers, {})
 
-    @mock.patch("redis.Redis", MockRedis)
+    @mock.patch("redis.Redis", fakeredis.FakeStrictRedis)
     @mock.patch('snowflake.snowflake', get_mock_snowflake)
     def test_delete_record(self):
         self._servicer._redis_dict.clear()
@@ -105,7 +106,7 @@ class DirectorydRpcServiceTests(TestCase):
             self._stub.DeleteRecord(del_req)
         self.assertEqual(err.exception.code(), grpc.StatusCode.NOT_FOUND)
 
-    @mock.patch("redis.Redis", MockRedis)
+    @mock.patch("redis.Redis", fakeredis.FakeStrictRedis)
     @mock.patch('snowflake.snowflake', get_mock_snowflake)
     def test_get_field(self):
         self._servicer._redis_dict.clear()
@@ -127,7 +128,7 @@ class DirectorydRpcServiceTests(TestCase):
             self._stub.GetDirectoryField(get_req)
         self.assertEqual(err.exception.code(), grpc.StatusCode.NOT_FOUND)
 
-    @mock.patch("redis.Redis", MockRedis)
+    @mock.patch("redis.Redis", fakeredis.FakeStrictRedis)
     @mock.patch('snowflake.snowflake', get_mock_snowflake)
     def test_get_all(self):
         self._servicer._redis_dict.clear()
@@ -156,7 +157,7 @@ class DirectorydRpcServiceTests(TestCase):
             else:
                 raise AssertionError()
 
-    @mock.patch("redis.Redis", MockUnavailableRedis)
+    @mock.patch("redis.Redis", fakeredis.FakeStrictRedis)
     @mock.patch('snowflake.snowflake', get_mock_snowflake)
     def test_redis_unavailable(self):
         self._servicer._redis_dict = MockUnavailableRedis("localhost", 6380)

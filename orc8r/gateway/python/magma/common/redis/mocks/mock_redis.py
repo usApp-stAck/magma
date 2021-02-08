@@ -53,7 +53,9 @@ class MockRedis(object):
         skey = self.serialize_key(key)
         return self.redis[skey] if skey in self.redis else None
 
-    def set(self, key, value):
+    # pylint: disable=unused-argument
+    def set(self, key, value,
+            ex=None, px=None, nx=False, xx=False, keepttl=False):
         """Mock set."""
         skey = self.serialize_key(key)
         self.redis[skey] = value
