@@ -9,3 +9,4 @@ jobs:
     resource_class: magma/magma/teravm
     steps:
       - run: echo "Hi I'm on Runners!"
+      - run: echo "Hi I'm on Runners!"
