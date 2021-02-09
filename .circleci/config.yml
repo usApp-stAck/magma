@@ -6,7 +6,7 @@ workflows:
 jobs:
   runner:
     machine: true
-    resource_class: magma/magma/teravm
+    resource_class: magma/teravm
     steps:
       - run: echo "Hi I'm on Runners!"
       - run: echo "Hi I'm on Runners!"
