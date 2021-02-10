@@ -30,6 +30,9 @@ class EventBaseWrapper {
 
   void runInEventBaseThread(folly::Cob&& cob);
 
+  void log_push(std::chrono::system_clock::time_point now);
+  void log_pop(std::chrono::system_clock::time_point then);
+
  private:
   folly::EventBase* evb_;
   int event_count = 0;

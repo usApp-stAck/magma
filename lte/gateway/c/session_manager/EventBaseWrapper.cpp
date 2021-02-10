@@ -12,8 +12,12 @@
  */
 
 #include "EventBaseWrapper.h"
+#include "magma_logging.h"
+#include "Utilities.h"
+#include "date.h"
 
 namespace magma {
+using namespace date;
 
 EventBaseWrapper::EventBaseWrapper(folly::EventBase* evb) : evb_(evb) {}
 
@@ -27,10 +31,36 @@ void EventBaseWrapper::terminateLoopSoon() {
 
 void EventBaseWrapper::runAfterDelay(
     folly::Function<void()> func, int32_t delayMs) {
-  evb_->runAfterDelay(std::move(func), delayMs);
+  auto now = std::chrono::system_clock::now();
+  log_push(now);
+  evb_->runAfterDelay(
+      [this, func = std::move(func), now]() mutable {
+        func();
+        log_pop(now);
+      },
+      delayMs);
 };
 
 void EventBaseWrapper::runInEventBaseThread(folly::Cob&& cob) {
-  evb_->runInEventBaseThread(std::move(cob));
+  auto now = std::chrono::system_clock::now();
+  log_push(now);
+  evb_->runInEventBaseThread([this, func = std::move(cob), now]() mutable {
+    func();
+    log_pop(now);
+  });
 }
+
+void EventBaseWrapper::log_push(std::chrono::system_clock::time_point now) {
+  event_count++;
+  MLOG(MINFO) << "[" << event_count << "] ==> Inserting into EventQueue at "
+              << now;
+};
+
+void EventBaseWrapper::log_pop(std::chrono::system_clock::time_point then) {
+  auto now = std::chrono::system_clock::now();
+  event_count--;
+  MLOG(MINFO) << "[" << event_count << "] "
+              << "<== Popping from EventQueue (inserted: " << then
+              << ", duration: " << (now - then);
+};
 };  // namespace magma
